@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Loto Scolaire Pro - Texte & Images Automatiques</title>
+    <title>Loto Scolaire Pro - Correctif Final</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     
     <style>
@@ -25,15 +25,14 @@
         .btn-tool { background: #95a5a6; font-size: 0.8em; }
         button:hover { opacity: 0.9; }
 
-        /* Grilles */
         .grid-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-        .bingo-card { border: 2px solid #000; background: white; padding: 15px; width: 280px; page-break-inside: avoid; }
+        .bingo-card { border: 2px solid #000; background: white; padding: 15px; width: 280px; page-break-inside: avoid; margin-bottom: 20px; }
         .student-name { border-bottom: 1px solid #000; margin-bottom: 10px; padding-bottom: 5px; font-style: italic; font-size: 0.8em; }
         .grid { display: grid; border: 2px solid #000; }
-        .cell { border: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 5px; font-weight: bold; }
-        .cell img { max-width: 90%; max-height: 70px; object-fit: contain; }
+        .cell { border: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 5px; font-weight: bold; overflow: hidden; background: #fff; }
+        .cell img { max-width: 95%; max-height: 75px; object-fit: contain; }
 
-        #status-msg { text-align: center; font-weight: bold; color: #e67e22; margin-bottom: 10px; display: none; }
+        #status-msg { text-align: center; font-weight: bold; color: #e67e22; margin-bottom: 10px; display: none; padding: 10px; background: #fff; border-radius: 8px; }
 
         @media print {
             .controls { display: none; }
@@ -46,7 +45,7 @@
 <body onload="refreshLibraryList()">
 
 <div class="controls">
-    <h2>📚 Bibliothèque de Loto (Texte & Images Pixabay)</h2>
+    <h2>📚 Loto Scolaire (V3 - Stable)</h2>
     
     <div class="library-zone">
         <label>Charger une liste enregistrée :</label>
@@ -66,18 +65,9 @@
     <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
 
     <div class="form-grid">
-        <div class="form-group">
-            <label>Colonnes</label>
-            <input type="number" id="cols" value="3">
-        </div>
-        <div class="form-group">
-            <label>Lignes</label>
-            <input type="number" id="rows" value="3">
-        </div>
-        <div class="form-group">
-            <label>Taille Texte</label>
-            <input type="number" id="fontSize" value="20">
-        </div>
+        <div class="form-group"><label>Colonnes</label><input type="number" id="cols" value="3"></div>
+        <div class="form-group"><label>Lignes</label><input type="number" id="rows" value="3"></div>
+        <div class="form-group"><label>Taille Texte</label><input type="number" id="fontSize" value="20"></div>
         <div class="form-group">
             <label>Police</label>
             <select id="fontFamily">
@@ -88,19 +78,19 @@
         </div>
 
         <div class="form-group full-width">
-            <label>Éléments (Utilisez <strong>img:mot</strong> pour une image, ex: <em>img:lion</em>)</label>
-            <textarea id="customList" rows="3" placeholder="ex: chat, img:chien, lapin, img:oiseau..."></textarea>
+            <label>Éléments (Mots simples ou <strong>img:mot</strong> pour une image)</label>
+            <textarea id="customList" rows="3" placeholder="chat, chien, img:pomme, img:poire..."></textarea>
         </div>
 
         <div class="form-group full-width">
             <label>Nom de la liste :</label>
             <div style="display:flex; gap: 10px;">
-                <input type="text" id="listName" placeholder="ex: Vocabulaire Animaux">
+                <input type="text" id="listName" placeholder="Ma nouvelle liste">
                 <button class="btn-save" style="flex: 0.5;" onclick="saveToLibrary()">💾 Enregistrer</button>
             </div>
         </div>
         <div class="form-group full-width">
-            <label>Nombre de fiches à générer</label>
+            <label>Nombre de fiches</label>
             <input type="number" id="qty" value="12">
         </div>
     </div>
@@ -111,19 +101,16 @@
     </div>
 </div>
 
-<div id="status-msg">Recherche des images sur Pixabay... ⏳</div>
+<div id="status-msg">Chargement des images... Merci de patienter. ⏳</div>
 <div id="print-area" class="grid-container"></div>
 
 <script>
-    // --- CONFIGURATION ---
-    const PIXABAY_KEY = '54483777-8e2234ae5d4995afcccfc80ac'; // <-- REMPLACE PAR TA CLÉ API
-    // ---------------------
-
-    let library = JSON.parse(localStorage.getItem('lotoLibrary')) || {};
+    var PIXABAY_KEY = '54483777-8e2234ae5d4995afcccfc80ac';
+    var library = JSON.parse(localStorage.getItem('lotoLibrary')) || {};
 
     function saveToLibrary() {
-        const name = document.getElementById('listName').value.trim();
-        const content = document.getElementById('customList').value.trim();
+        var name = document.getElementById('listName').value.trim();
+        var content = document.getElementById('customList').value.trim();
         if (!name || !content) return alert("Nom et contenu requis !");
         library[name] = content;
         localStorage.setItem('lotoLibrary', JSON.stringify(library));
@@ -131,17 +118,17 @@
     }
 
     function refreshLibraryList() {
-        const select = document.getElementById('librarySelect');
+        var select = document.getElementById('librarySelect');
         select.innerHTML = '<option value="">-- Mes Listes --</option>';
-        Object.keys(library).sort().forEach(name => {
-            const opt = document.createElement('option');
+        Object.keys(library).sort().forEach(function(name) {
+            var opt = document.createElement('option');
             opt.value = name; opt.innerText = name;
             select.appendChild(opt);
         });
     }
 
     function loadFromLibrary() {
-        const name = document.getElementById('librarySelect').value;
+        var name = document.getElementById('librarySelect').value;
         if (name) {
             document.getElementById('customList').value = library[name];
             document.getElementById('listName').value = name;
@@ -149,8 +136,8 @@
     }
 
     function deleteFromLibrary() {
-        const name = document.getElementById('librarySelect').value;
-        if (name && confirm(`Supprimer "${name}" ?`)) {
+        var name = document.getElementById('librarySelect').value;
+        if (name && confirm("Supprimer " + name + " ?")) {
             delete library[name];
             localStorage.setItem('lotoLibrary', JSON.stringify(library));
             refreshLibraryList();
@@ -158,94 +145,97 @@
     }
 
     function exportLibrary() {
-        const dataStr = JSON.stringify(library);
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', 'ma-bibliotheque-loto.json');
-        linkElement.click();
+        var dataStr = JSON.stringify(library);
+        var dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        var link = document.createElement('a');
+        link.setAttribute('href', dataUri);
+        link.setAttribute('download', 'ma-bibliotheque-loto.json');
+        link.click();
     }
 
     function importLibrary(event) {
-        const reader = new FileReader();
+        var reader = new FileReader();
         reader.onload = function(e) {
             try {
-                const importedData = JSON.parse(e.target.result);
-                library = {...library, ...importedData};
+                var importedData = JSON.parse(e.target.result);
+                library = Object.assign({}, library, importedData);
                 localStorage.setItem('lotoLibrary', JSON.stringify(library));
                 refreshLibraryList();
                 alert("Importation réussie !");
-            } catch (err) { alert("Erreur lors de la lecture du fichier."); }
+            } catch (err) { alert("Erreur de lecture."); }
         };
         reader.readAsText(event.target.files[0]);
     }
 
-    // Fonction pour chercher l'image (Vecteur/Dessin par défaut pour l'école)
-    async function fetchPixabay(keyword) {
-        if (PIXABAY_KEY === 'VOTRE_CLE_ICI') {
-            alert("Veuillez configurer votre clé API Pixabay dans le code.");
-            return null;
-        }
-        const url = `https://pixabay.com/api/?key=${PIXABAY_KEY}&q=${encodeURIComponent(keyword)}&image_type=vector&lang=fr&per_page=3`;
+    // Version simplifiée de la recherche d'image
+    async function getImg(keyword) {
         try {
-            const response = await fetch(url);
-            const data = await response.json();
+            var url = "https://pixabay.com/api/?key=" + PIXABAY_KEY + "&q=" + encodeURIComponent(keyword) + "&image_type=vector&lang=fr&per_page=3";
+            var resp = await fetch(url);
+            var data = await resp.json();
             return (data.hits && data.hits.length > 0) ? data.hits[0].webformatURL : null;
         } catch (e) { return null; }
     }
 
     async function generate() {
-        const cols = parseInt(document.getElementById('cols').value);
-        const rows = parseInt(document.getElementById('rows').value);
-        const qty = parseInt(document.getElementById('qty').value);
-        const fSize = document.getElementById('fontSize').value;
-        const font = document.getElementById('fontFamily').value;
-        const totalCells = cols * rows;
-        let sourceArray = document.getElementById('customList').value.split(',').map(s => s.trim()).filter(s => s !== "");
+        var cols = parseInt(document.getElementById('cols').value) || 3;
+        var rows = parseInt(document.getElementById('rows').value) || 3;
+        var qty = parseInt(document.getElementById('qty').value) || 1;
+        var fSize = document.getElementById('fontSize').value;
+        var font = document.getElementById('fontFamily').value;
+        var totalCells = cols * rows;
+        var sourceArray = document.getElementById('customList').value.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s !== ""; });
 
-        if (sourceArray.length < totalCells) return alert(`Il faut au moins ${totalCells} éléments.`);
-
-        document.getElementById('status-msg').style.display = 'block';
-        const container = document.getElementById('print-area');
-        container.innerHTML = '';
-
-        // Pré-chargement des images uniques pour gagner du temps et de la bande passante
-        const imageCache = {};
-        const uniqueImageRequests = [...new Set(sourceArray.filter(i => i.startsWith('img:')))];
-        
-        for(let req of uniqueImageRequests) {
-            const query = req.replace('img:', '');
-            imageCache[req] = await fetchPixabay(query);
+        if (sourceArray.length < totalCells) {
+            alert("Il faut au moins " + totalCells + " éléments.");
+            return;
         }
 
-        for (let g = 1; g <= qty; g++) {
-            const shuffled = [...sourceArray].sort(() => 0.5 - Math.random());
-            const selection = shuffled.slice(0, totalCells);
-            const card = document.createElement('div');
-            card.className = 'bingo-card';
-            card.innerHTML = `<div class="student-name">Nom : ...........................</div>`;
-            const grid = document.createElement('div');
-            grid.className = 'grid';
-            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        document.getElementById('status-msg').style.display = 'block';
+        var container = document.getElementById('print-area');
+        container.innerHTML = '';
 
-            selection.forEach(item => {
-                const cell = document.createElement('div');
+        // Cache des images
+        var cache = {};
+        for (var i = 0; i < sourceArray.length; i++) {
+            var item = sourceArray[i];
+            if (item.indexOf('img:') === 0 && !cache[item]) {
+                var query = item.replace('img:', '');
+                cache[item] = await getImg(query);
+            }
+        }
+
+        for (var g = 0; g < qty; g++) {
+            var shuffled = sourceArray.slice().sort(function(){ return 0.5 - Math.random(); });
+            var selection = shuffled.slice(0, totalCells);
+            
+            var card = document.createElement('div');
+            card.className = 'bingo-card';
+            card.innerHTML = '<div class="student-name">Nom : ...........................</div>';
+            
+            var grid = document.createElement('div');
+            grid.className = 'grid';
+            grid.style.gridTemplateColumns = "repeat(" + cols + ", 1fr)";
+
+            selection.forEach(function(item) {
+                var cell = document.createElement('div');
                 cell.className = 'cell';
                 
-                if (item.startsWith('img:')) {
-                    const url = imageCache[item];
-                    if (url) {
-                        cell.innerHTML = `<img src="${url}">`;
+                if (item.indexOf('img:') === 0) {
+                    var imgUrl = cache[item];
+                    if (imgUrl) {
+                        cell.innerHTML = '<img src="' + imgUrl + '">';
                     } else {
-                        cell.innerText = item.replace('img:', ''); // Texte de secours
+                        cell.innerText = item.replace('img:', '');
                     }
                 } else {
                     cell.innerText = item;
                     cell.style.fontFamily = font;
-                    cell.style.fontSize = font.includes('Dancing Script') ? (parseInt(fSize) + 8) + 'px' : fSize + 'px';
+                    cell.style.fontSize = (font.indexOf('Dancing Script') !== -1) ? (parseInt(fSize) + 8) + 'px' : fSize + 'px';
                 }
                 grid.appendChild(cell);
             });
+            
             card.appendChild(grid);
             container.appendChild(card);
         }
