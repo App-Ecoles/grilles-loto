@@ -2,77 +2,221 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Loto Scolaire - Version de Secours</title>
+    <title>Loto Scolaire Pro - Bibliothèque Nomade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: sans-serif; background: #eee; padding: 20px; }
-        .controls { background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: 0 auto 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        textarea { width: 100%; height: 60px; margin: 10px 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .controls { background: white; padding: 25px; border-radius: 12px; max-width: 800px; margin: 0 auto 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 5px solid #e67e22; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; } /* Ajusté à 4 colonnes pour la police */
+        .full-width { grid-column: span 4; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; color: #555; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        
+        .library-zone { background: #fff9f0; padding: 15px; border-radius: 8px; border: 1px dashed #e67e22; margin-top: 15px; }
+        .library-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        
+        .actions { margin-top: 20px; display: flex; gap: 10px; }
+        button { padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; color: white; }
+        .btn-gen { background: #3498db; flex: 1; font-size: 1.1em; }
+        .btn-print { background: #27ae60; flex: 1; font-size: 1.1em; }
+        .btn-save { background: #e67e22; }
+        .btn-del { background: #e74c3c; }
+        .btn-tool { background: #95a5a6; font-size: 0.8em; }
+        button:hover { opacity: 0.9; }
+
+        /* Grilles */
         .grid-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-        .bingo-card { border: 2px solid black; background: white; padding: 10px; width: 250px; }
-        .grid { display: grid; border: 1px solid black; }
-        .cell { border: 1px solid black; height: 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; text-align: center; }
-        button { background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #2980b9; }
+        .bingo-card { border: 2px solid #000; background: white; padding: 15px; width: 280px; page-break-inside: avoid; }
+        .student-name { border-bottom: 1px solid #000; margin-bottom: 10px; padding-bottom: 5px; font-style: italic; font-size: 0.8em; }
+        .grid { display: grid; border: 2px solid #000; }
+        .cell { border: 1px solid #000; min-height: 50px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 5px; font-weight: bold; }
+
+        @media print {
+            .controls { display: none; }
+            body { background: white; padding: 0; }
+            .grid-container { display: block; }
+            .bingo-card { margin-bottom: 40px; width: 45%; float: left; margin-right: 2%; }
+        }
     </style>
 </head>
-<body>
+<body onload="refreshLibraryList()">
 
 <div class="controls">
-    <h2>Générateur de Loto (Mode Sécurisé)</h2>
-    <label>Mots (séparés par des virgules) :</label><br>
-    <textarea id="list">pomme, poire, banane, fraise, orange, citron, raisin, cerise, melon</textarea>
-    <br>
-    <label>Nombre de fiches :</label>
-    <input type="number" id="qty" value="6" style="width: 50px;">
-    <button onclick="genererLoto()">Générer les grilles</button>
+    <h2>📚 Bibliothèque de Loto Personnalisée</h2>
+    
+    <div class="library-zone">
+        <label>Charger une liste enregistrée :</label>
+        <div style="display: flex; gap: 10px;">
+            <select id="librarySelect" onchange="loadFromLibrary()" style="flex: 2;">
+                <option value="">-- Mes Listes --</option>
+            </select>
+            <button class="btn-del" onclick="deleteFromLibrary()">Supprimer</button>
+        </div>
+        <div class="library-actions">
+            <button class="btn-tool" onclick="exportLibrary()">📤 Exporter (Sauvegarder fichier)</button>
+            <button class="btn-tool" onclick="document.getElementById('importFile').click()">📥 Importer (Ouvrir fichier)</button>
+            <input type="file" id="importFile" style="display:none" onchange="importLibrary(event)">
+        </div>
+    </div>
+
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Colonnes</label>
+            <input type="number" id="cols" value="3">
+        </div>
+        <div class="form-group">
+            <label>Lignes</label>
+            <input type="number" id="rows" value="3">
+        </div>
+        <div class="form-group">
+            <label>Taille (px)</label>
+            <input type="number" id="fontSize" value="20">
+        </div>
+        <div class="form-group">
+            <label>Police</label>
+            <select id="fontFamily">
+                <option value="'Segoe UI', sans-serif">Bâton</option>
+                <option value="'Dancing Script', cursive">Cursive</option>
+                <option value="monospace">Machine</option>
+            </select>
+        </div>
+
+        <div class="form-group full-width">
+            <label>Éléments (séparés par une virgule)</label>
+            <textarea id="customList" rows="3" placeholder="ex: ba, be, bi, bo, bu..."></textarea>
+        </div>
+
+        <div class="form-group full-width">
+            <label>Nom de la liste :</label>
+            <div style="display:flex; gap: 10px;">
+                <input type="text" id="listName" placeholder="ex: Syllabes complexes">
+                <button class="btn-save" style="flex: 0.5;" onclick="saveToLibrary()">💾 Enregistrer</button>
+            </div>
+        </div>
+        <div class="form-group full-width">
+            <label>Nombre de fiches à générer</label>
+            <input type="number" id="qty" value="24">
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn-gen" onclick="generate()">✨ Générer les grilles</button>
+        <button class="btn-print" onclick="window.print()">🖨️ Imprimer en PDF</button>
+    </div>
 </div>
 
 <div id="print-area" class="grid-container"></div>
 
 <script>
-    function genererLoto() {
-        var texte = document.getElementById('list').value;
-        var mots = texte.split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m !== ""; });
-        var quantite = parseInt(document.getElementById('qty').value) || 1;
-        var container = document.getElementById('print-area');
-        
-        // Vérification
-        if (mots.length < 9) {
-            alert("Il faut au moins 9 mots !");
-            return;
+    let library = JSON.parse(localStorage.getItem('lotoLibrary')) || {};
+
+    function saveToLibrary() {
+        const name = document.getElementById('listName').value.trim();
+        const content = document.getElementById('customList').value.trim();
+        if (!name || !content) return alert("Nom et contenu requis !");
+        library[name] = content;
+        localStorage.setItem('lotoLibrary', JSON.stringify(library));
+        refreshLibraryList();
+    }
+
+    function refreshLibraryList() {
+        const select = document.getElementById('librarySelect');
+        select.innerHTML = '<option value="">-- Mes Listes --</option>';
+        Object.keys(library).sort().forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name; opt.innerText = name;
+            select.appendChild(opt);
+        });
+    }
+
+    function loadFromLibrary() {
+        const name = document.getElementById('librarySelect').value;
+        if (name) {
+            document.getElementById('customList').value = library[name];
+            document.getElementById('listName').value = name;
         }
+    }
 
-        container.innerHTML = ''; // On vide
+    function deleteFromLibrary() {
+        const name = document.getElementById('librarySelect').value;
+        if (name && confirm(`Supprimer "${name}" ?`)) {
+            delete library[name];
+            localStorage.setItem('lotoLibrary', JSON.stringify(library));
+            refreshLibraryList();
+        }
+    }
 
-        for (var g = 0; g < quantite; g++) {
-            // Mélange
-            var melange = mots.slice().sort(function() { return 0.5 - Math.random(); });
-            var selection = melange.slice(0, 9);
+    function exportLibrary() {
+        const dataStr = JSON.stringify(library);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        const exportFileDefaultName = 'ma-bibliotheque-loto.json';
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    }
 
-            // Création de la carte
-            var carte = document.createElement('div');
-            carte.className = 'bingo-card';
-            carte.innerHTML = '<div style="margin-bottom:5px; font-style:italic;">Nom : ...........</div>';
-
-            var grille = document.createElement('div');
-            grille.className = 'grid';
-            grille.style.gridTemplateColumns = 'repeat(3, 1fr)';
-
-            for (var i = 0; i < 9; i++) {
-                var cellule = document.createElement('div');
-                cellule.className = 'cell';
-                cellule.innerText = selection[i];
-                grille.appendChild(cellule);
+    function importLibrary(event) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                library = {...library, ...importedData};
+                localStorage.setItem('lotoLibrary', JSON.stringify(library));
+                refreshLibraryList();
+                alert("Bibliothèque mise à jour avec succès !");
+            } catch (err) {
+                alert("Erreur lors de la lecture du fichier.");
             }
+        };
+        reader.readAsText(event.target.files[0]);
+    }
 
-            carte.appendChild(grille);
-            container.appendChild(carte);
+    function generate() {
+        const cols = parseInt(document.getElementById('cols').value);
+        const rows = parseInt(document.getElementById('rows').value);
+        const qty = parseInt(document.getElementById('qty').value);
+        const fSize = document.getElementById('fontSize').value;
+        const font = document.getElementById('fontFamily').value; // Récupère la police
+        const totalCells = cols * rows;
+        let sourceArray = document.getElementById('customList').value.split(',').map(s => s.trim()).filter(s => s !== "");
+
+        if (sourceArray.length < totalCells) return alert(`Il faut au moins ${totalCells} éléments.`);
+
+        const container = document.getElementById('print-area');
+        container.innerHTML = '';
+
+        for (let g = 1; g <= qty; g++) {
+            const shuffled = [...sourceArray].sort(() => 0.5 - Math.random());
+            const selection = shuffled.slice(0, totalCells);
+            const card = document.createElement('div');
+            card.className = 'bingo-card';
+            card.innerHTML = `<div class="student-name">Nom : ...........................</div>`;
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            selection.forEach(item => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                
+                // Application de la police et ajustement de taille si cursive
+                cell.style.fontFamily = font;
+                if (font.includes('Dancing Script')) {
+                    cell.style.fontSize = (parseInt(fSize) + 8) + 'px'; // On booste la cursive qui est petite
+                } else {
+                    cell.style.fontSize = fSize + 'px';
+                }
+                
+                cell.innerText = item;
+                grid.appendChild(cell);
+            });
+            card.appendChild(grid);
+            container.appendChild(card);
         }
     }
 </script>
-
 </body>
 </html>
-
-
-
