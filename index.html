@@ -2,13 +2,13 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Loto Scolaire Pro - Bibliothèque Nomade</title>
+    <title>Loto Scolaire Pro - Texte & Images Automatiques</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
         .controls { background: white; padding: 25px; border-radius: 12px; max-width: 800px; margin: 0 auto 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 5px solid #e67e22; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; } /* Ajusté à 4 colonnes pour la police */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
         .full-width { grid-column: span 4; }
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; color: #555; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
@@ -30,7 +30,10 @@
         .bingo-card { border: 2px solid #000; background: white; padding: 15px; width: 280px; page-break-inside: avoid; }
         .student-name { border-bottom: 1px solid #000; margin-bottom: 10px; padding-bottom: 5px; font-style: italic; font-size: 0.8em; }
         .grid { display: grid; border: 2px solid #000; }
-        .cell { border: 1px solid #000; min-height: 50px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 5px; font-weight: bold; }
+        .cell { border: 1px solid #000; min-height: 80px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 5px; font-weight: bold; }
+        .cell img { max-width: 90%; max-height: 70px; object-fit: contain; }
+
+        #status-msg { text-align: center; font-weight: bold; color: #e67e22; margin-bottom: 10px; display: none; }
 
         @media print {
             .controls { display: none; }
@@ -43,7 +46,7 @@
 <body onload="refreshLibraryList()">
 
 <div class="controls">
-    <h2>📚 Bibliothèque de Loto Personnalisée</h2>
+    <h2>📚 Bibliothèque de Loto (Texte & Images Pixabay)</h2>
     
     <div class="library-zone">
         <label>Charger une liste enregistrée :</label>
@@ -54,8 +57,8 @@
             <button class="btn-del" onclick="deleteFromLibrary()">Supprimer</button>
         </div>
         <div class="library-actions">
-            <button class="btn-tool" onclick="exportLibrary()">📤 Exporter (Sauvegarder fichier)</button>
-            <button class="btn-tool" onclick="document.getElementById('importFile').click()">📥 Importer (Ouvrir fichier)</button>
+            <button class="btn-tool" onclick="exportLibrary()">📤 Exporter</button>
+            <button class="btn-tool" onclick="document.getElementById('importFile').click()">📥 Importer</button>
             <input type="file" id="importFile" style="display:none" onchange="importLibrary(event)">
         </div>
     </div>
@@ -72,7 +75,7 @@
             <input type="number" id="rows" value="3">
         </div>
         <div class="form-group">
-            <label>Taille (px)</label>
+            <label>Taille Texte</label>
             <input type="number" id="fontSize" value="20">
         </div>
         <div class="form-group">
@@ -85,20 +88,20 @@
         </div>
 
         <div class="form-group full-width">
-            <label>Éléments (séparés par une virgule)</label>
-            <textarea id="customList" rows="3" placeholder="ex: ba, be, bi, bo, bu..."></textarea>
+            <label>Éléments (Utilisez <strong>img:mot</strong> pour une image, ex: <em>img:lion</em>)</label>
+            <textarea id="customList" rows="3" placeholder="ex: chat, img:chien, lapin, img:oiseau..."></textarea>
         </div>
 
         <div class="form-group full-width">
             <label>Nom de la liste :</label>
             <div style="display:flex; gap: 10px;">
-                <input type="text" id="listName" placeholder="ex: Syllabes complexes">
+                <input type="text" id="listName" placeholder="ex: Vocabulaire Animaux">
                 <button class="btn-save" style="flex: 0.5;" onclick="saveToLibrary()">💾 Enregistrer</button>
             </div>
         </div>
         <div class="form-group full-width">
             <label>Nombre de fiches à générer</label>
-            <input type="number" id="qty" value="24">
+            <input type="number" id="qty" value="12">
         </div>
     </div>
 
@@ -108,9 +111,14 @@
     </div>
 </div>
 
+<div id="status-msg">Recherche des images sur Pixabay... ⏳</div>
 <div id="print-area" class="grid-container"></div>
 
 <script>
+    // --- CONFIGURATION ---
+    const PIXABAY_KEY = 54483777-8e2234ae5d4995afcccfc80ac; // <-- REMPLACE PAR TA CLÉ API
+    // ---------------------
+
     let library = JSON.parse(localStorage.getItem('lotoLibrary')) || {};
 
     function saveToLibrary() {
@@ -152,10 +160,9 @@
     function exportLibrary() {
         const dataStr = JSON.stringify(library);
         const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-        const exportFileDefaultName = 'ma-bibliotheque-loto.json';
         const linkElement = document.createElement('a');
         linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.setAttribute('download', 'ma-bibliotheque-loto.json');
         linkElement.click();
     }
 
@@ -167,27 +174,49 @@
                 library = {...library, ...importedData};
                 localStorage.setItem('lotoLibrary', JSON.stringify(library));
                 refreshLibraryList();
-                alert("Bibliothèque mise à jour avec succès !");
-            } catch (err) {
-                alert("Erreur lors de la lecture du fichier.");
-            }
+                alert("Importation réussie !");
+            } catch (err) { alert("Erreur lors de la lecture du fichier."); }
         };
         reader.readAsText(event.target.files[0]);
     }
 
-    function generate() {
+    // Fonction pour chercher l'image (Vecteur/Dessin par défaut pour l'école)
+    async function fetchPixabay(keyword) {
+        if (PIXABAY_KEY === 'VOTRE_CLE_ICI') {
+            alert("Veuillez configurer votre clé API Pixabay dans le code.");
+            return null;
+        }
+        const url = `https://pixabay.com/api/?key=${PIXABAY_KEY}&q=${encodeURIComponent(keyword)}&image_type=vector&lang=fr&per_page=3`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            return (data.hits && data.hits.length > 0) ? data.hits[0].webformatURL : null;
+        } catch (e) { return null; }
+    }
+
+    async function generate() {
         const cols = parseInt(document.getElementById('cols').value);
         const rows = parseInt(document.getElementById('rows').value);
         const qty = parseInt(document.getElementById('qty').value);
         const fSize = document.getElementById('fontSize').value;
-        const font = document.getElementById('fontFamily').value; // Récupère la police
+        const font = document.getElementById('fontFamily').value;
         const totalCells = cols * rows;
         let sourceArray = document.getElementById('customList').value.split(',').map(s => s.trim()).filter(s => s !== "");
 
         if (sourceArray.length < totalCells) return alert(`Il faut au moins ${totalCells} éléments.`);
 
+        document.getElementById('status-msg').style.display = 'block';
         const container = document.getElementById('print-area');
         container.innerHTML = '';
+
+        // Pré-chargement des images uniques pour gagner du temps et de la bande passante
+        const imageCache = {};
+        const uniqueImageRequests = [...new Set(sourceArray.filter(i => i.startsWith('img:')))];
+        
+        for(let req of uniqueImageRequests) {
+            const query = req.replace('img:', '');
+            imageCache[req] = await fetchPixabay(query);
+        }
 
         for (let g = 1; g <= qty; g++) {
             const shuffled = [...sourceArray].sort(() => 0.5 - Math.random());
@@ -198,26 +227,32 @@
             const grid = document.createElement('div');
             grid.className = 'grid';
             grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
             selection.forEach(item => {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 
-                // Application de la police et ajustement de taille si cursive
-                cell.style.fontFamily = font;
-                if (font.includes('Dancing Script')) {
-                    cell.style.fontSize = (parseInt(fSize) + 8) + 'px'; // On booste la cursive qui est petite
+                if (item.startsWith('img:')) {
+                    const url = imageCache[item];
+                    if (url) {
+                        cell.innerHTML = `<img src="${url}">`;
+                    } else {
+                        cell.innerText = item.replace('img:', ''); // Texte de secours
+                    }
                 } else {
-                    cell.style.fontSize = fSize + 'px';
+                    cell.innerText = item;
+                    cell.style.fontFamily = font;
+                    cell.style.fontSize = font.includes('Dancing Script') ? (parseInt(fSize) + 8) + 'px' : fSize + 'px';
                 }
-                
-                cell.innerText = item;
                 grid.appendChild(cell);
             });
             card.appendChild(grid);
             container.appendChild(card);
         }
+        document.getElementById('status-msg').style.display = 'none';
     }
 </script>
 </body>
 </html>
+
 
