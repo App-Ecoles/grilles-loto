@@ -2,19 +2,44 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Loto Scolaire Pro - Bibliothèque Nomade</title>
+    <title>Loto Scolaire Pro - Texte & Images</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
-        .controls { background: white; padding: 25px; border-radius: 12px; max-width: 800px; margin: 0 auto 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 5px solid #e67e22; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; } /* Ajusté à 4 colonnes pour la police */
+        .controls { background: white; padding: 25px; border-radius: 12px; max-width: 900px; margin: 0 auto 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 5px solid #e67e22; }
+        
+        /* Onglets */
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #eee; }
+        .tab-btn { padding: 12px 25px; cursor: pointer; border: none; background: none; font-weight: bold; color: #888; border-bottom: 3px solid transparent; font-size: 1em; transition: 0.2s; }
+        .tab-btn:hover { color: #e67e22; }
+        .tab-btn.active { color: #e67e22; border-bottom-color: #e67e22; background: #fff9f0; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
         .full-width { grid-column: span 4; }
+        .half-width { grid-column: span 2; }
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; color: #555; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
         
         .library-zone { background: #fff9f0; padding: 15px; border-radius: 8px; border: 1px dashed #e67e22; margin-top: 15px; }
         .library-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        
+        /* Zone images */
+        .image-upload-zone { background: #f0f8ff; padding: 20px; border-radius: 8px; border: 2px dashed #3498db; margin-bottom: 20px; text-align: center; }
+        .image-upload-zone h3 { margin-top: 0; color: #3498db; }
+        .upload-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; text-align: left; }
+        .upload-method { background: white; padding: 15px; border-radius: 6px; border: 1px solid #ddd; }
+        .upload-method h4 { margin-top: 0; color: #555; }
+        
+        .image-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin-top: 20px; }
+        .image-item { position: relative; border: 2px solid #ddd; border-radius: 8px; overflow: hidden; background: white; padding: 10px; }
+        .image-item img { width: 100%; height: 100px; object-fit: contain; display: block; }
+        .image-item .label { text-align: center; font-size: 0.8em; margin-top: 5px; color: #666; font-weight: bold; }
+        .image-item .remove-btn { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-size: 14px; line-height: 1; }
+        .image-item .remove-btn:hover { background: #c0392b; }
         
         .actions { margin-top: 20px; display: flex; gap: 10px; }
         button { padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; color: white; }
@@ -23,82 +48,185 @@
         .btn-save { background: #e67e22; }
         .btn-del { background: #e74c3c; }
         .btn-tool { background: #95a5a6; font-size: 0.8em; }
+        .btn-add { background: #3498db; padding: 8px 15px; }
         button:hover { opacity: 0.9; }
 
         /* Grilles */
         .grid-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-        .bingo-card { border: 2px solid #000; background: white; padding: 15px; width: 280px; page-break-inside: avoid; }
-        .student-name { border-bottom: 1px solid #000; margin-bottom: 10px; padding-bottom: 5px; font-style: italic; font-size: 0.8em; }
-        .grid { display: grid; border: 2px solid #000; }
-        .cell { border: 1px solid #000; min-height: 50px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 5px; font-weight: bold; }
+        .bingo-card { 
+            border: 2px solid #333; 
+            background: white; 
+            padding: 20px; 
+            width: 280px; 
+            page-break-inside: avoid; 
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .student-name { 
+            border-bottom: 2px solid #333; 
+            margin-bottom: 15px; 
+            padding-bottom: 8px; 
+            font-style: italic; 
+            font-size: 0.85em; 
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        .grid { 
+            display: grid; 
+            border: 2px solid #333; 
+            border-radius: 8px;
+            overflow: hidden;
+            background: #333;
+            gap: 2px;
+        }
+        .cell { 
+            background: white;
+            min-height: 70px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-align: center; 
+            padding: 8px; 
+            font-weight: 600;
+            flex-direction: column;
+            transition: background-color 0.2s;
+        }
+        .cell:hover {
+            background: #f8f8f8;
+        }
+        .cell img { max-width: 95%; max-height: 60px; object-fit: contain; margin-bottom: 3px; }
+        .cell .img-label { font-size: 0.7em; color: #555; font-weight: 500; }
 
         @media print {
             .controls { display: none; }
             body { background: white; padding: 0; }
             .grid-container { display: block; }
-            .bingo-card { margin-bottom: 40px; width: 45%; float: left; margin-right: 2%; }
+            .bingo-card { 
+                margin-bottom: 40px; 
+                width: 45%; 
+                float: left; 
+                margin-right: 2%;
+                box-shadow: none;
+                border: 2px solid #333;
+            }
+            .cell:hover {
+                background: white;
+            }
         }
     </style>
 </head>
-<body onload="refreshLibraryList()">
+<body onload="init()">
 
 <div class="controls">
-    <h2>📚 Bibliothèque de Loto Personnalisée</h2>
+    <h2>📚 Loto Texte et Images</h2>
     
-    <div class="library-zone">
-        <label>Charger une liste enregistrée :</label>
-        <div style="display: flex; gap: 10px;">
-            <select id="librarySelect" onchange="loadFromLibrary()" style="flex: 2;">
-                <option value="">-- Mes Listes --</option>
-            </select>
-            <button class="btn-del" onclick="deleteFromLibrary()">Supprimer</button>
+    <!-- Onglets -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('texte')">📝 Loto Texte</button>
+        <button class="tab-btn" onclick="switchTab('images')">🖼️ Loto Images</button>
+    </div>
+
+    <!-- ONGLET LOTO TEXTE -->
+    <div id="tab-texte" class="tab-content active">
+        <div class="library-zone">
+            <label>📚 Charger une liste enregistrée :</label>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <select id="librarySelect" onchange="loadFromLibrary()" style="flex: 2;">
+                    <option value="">-- Mes Listes de Mots --</option>
+                </select>
+                <button class="btn-del" onclick="deleteFromLibrary()">🗑️ Supprimer</button>
+            </div>
         </div>
-        <div class="library-actions">
-            <button class="btn-tool" onclick="exportLibrary()">📤 Exporter (Sauvegarder fichier)</button>
-            <button class="btn-tool" onclick="document.getElementById('importFile').click()">📥 Importer (Ouvrir fichier)</button>
-            <input type="file" id="importFile" style="display:none" onchange="importLibrary(event)">
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Colonnes</label>
+                <input type="number" id="cols-texte" value="3" min="2" max="6">
+            </div>
+            <div class="form-group">
+                <label>Lignes</label>
+                <input type="number" id="rows-texte" value="3" min="2" max="6">
+            </div>
+            <div class="form-group">
+                <label>Taille (px)</label>
+                <input type="number" id="fontSize-texte" value="20" min="10" max="50">
+            </div>
+            <div class="form-group">
+                <label>Police</label>
+                <select id="fontFamily-texte">
+                    <option value="'Segoe UI', sans-serif">Bâton</option>
+                    <option value="'Dancing Script', cursive">Cursive</option>
+                    <option value="monospace">Machine</option>
+                </select>
+            </div>
+
+            <div class="form-group full-width">
+                <label>Éléments (séparés par une virgule)</label>
+                <textarea id="customList-texte" rows="4" placeholder="ex: ba, be, bi, bo, bu, ca, ce, ci, co, cu..."></textarea>
+            </div>
+
+            <div class="form-group full-width">
+                <label>💾 Nom de la liste (pour sauvegarder) :</label>
+                <div style="display:flex; gap: 10px;">
+                    <input type="text" id="listName" placeholder="ex: Syllabes complexes">
+                    <button class="btn-save" onclick="saveToLibrary()">💾 Enregistrer cette liste</button>
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label>Nombre de fiches à générer</label>
+                <input type="number" id="qty-texte" value="24" min="1" max="50">
+            </div>
         </div>
     </div>
 
-    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-
-    <div class="form-grid">
-        <div class="form-group">
-            <label>Colonnes</label>
-            <input type="number" id="cols" value="3">
-        </div>
-        <div class="form-group">
-            <label>Lignes</label>
-            <input type="number" id="rows" value="3">
-        </div>
-        <div class="form-group">
-            <label>Taille (px)</label>
-            <input type="number" id="fontSize" value="20">
-        </div>
-        <div class="form-group">
-            <label>Police</label>
-            <select id="fontFamily">
-                <option value="'Segoe UI', sans-serif">Bâton</option>
-                <option value="'Dancing Script', cursive">Cursive</option>
-                <option value="monospace">Machine</option>
-            </select>
-        </div>
-
-        <div class="form-group full-width">
-            <label>Éléments (séparés par une virgule)</label>
-            <textarea id="customList" rows="3" placeholder="ex: ba, be, bi, bo, bu..."></textarea>
-        </div>
-
-        <div class="form-group full-width">
-            <label>Nom de la liste :</label>
-            <div style="display:flex; gap: 10px;">
-                <input type="text" id="listName" placeholder="ex: Syllabes complexes">
-                <button class="btn-save" style="flex: 0.5;" onclick="saveToLibrary()">💾 Enregistrer</button>
+    <!-- ONGLET LOTO IMAGES -->
+    <div id="tab-images" class="tab-content">
+        <div class="image-upload-zone">
+            <h3>🎨 Ajouter vos images</h3>
+            <p style="color: #666; margin-bottom: 15px;">Choisissez comment ajouter vos images :</p>
+            
+            <div class="upload-methods">
+                <div class="upload-method">
+                    <h4>📁 Depuis votre ordinateur</h4>
+                    <input type="file" id="imageFileUpload" accept="image/*" style="margin-bottom: 10px;">
+                    <input type="text" id="imageFileLabel" placeholder="Nom de l'image (ex: chat)" style="margin-bottom: 10px;">
+                    <button class="btn-add" onclick="addImageFromFile()">➕ Ajouter</button>
+                </div>
+                
+                <div class="upload-method">
+                    <h4>🔗 Depuis une URL</h4>
+                    <input type="url" id="imageUrlInput" placeholder="https://exemple.com/image.jpg" style="margin-bottom: 10px;">
+                    <input type="text" id="imageUrlLabel" placeholder="Nom de l'image (ex: chien)" style="margin-bottom: 10px;">
+                    <button class="btn-add" onclick="addImageFromUrl()">➕ Ajouter</button>
+                </div>
             </div>
         </div>
-        <div class="form-group full-width">
-            <label>Nombre de fiches à générer</label>
-            <input type="number" id="qty" value="24">
+
+        <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
+            <label>
+                <input type="checkbox" id="showImageLabels" checked> Afficher les noms sous les images
+            </label>
+        </div>
+
+        <h3>📸 Mes images (cliquez pour sélectionner)</h3>
+        <div class="image-gallery" id="imageGallery"></div>
+
+        <div class="form-grid" style="margin-top: 20px;">
+            <div class="form-group">
+                <label>Colonnes</label>
+                <input type="number" id="cols-images" value="3" min="2" max="6">
+            </div>
+            <div class="form-group">
+                <label>Lignes</label>
+                <input type="number" id="rows-images" value="3" min="2" max="6">
+            </div>
+            <div class="form-group half-width">
+                <label>Nombre de fiches à générer</label>
+                <input type="number" id="qty-images" value="24" min="1" max="50">
+            </div>
         </div>
     </div>
 
@@ -112,79 +240,235 @@
 
 <script>
     let library = JSON.parse(localStorage.getItem('lotoLibrary')) || {};
+    let imageLibrary = JSON.parse(localStorage.getItem('lotoImages')) || {};
+    let currentTab = 'texte';
 
+    function init() {
+        refreshLibraryList();
+        refreshImageGallery();
+    }
+
+    function switchTab(tabName) {
+        currentTab = tabName;
+        
+        // Gestion des onglets
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        event.target.classList.add('active');
+        document.getElementById('tab-' + tabName).classList.add('active');
+    }
+
+    // === GESTION DES IMAGES ===
+    
+    function addImageFromFile() {
+        const fileInput = document.getElementById('imageFileUpload');
+        const label = document.getElementById('imageFileLabel').value.trim();
+        
+        if (!fileInput.files[0]) {
+            return alert("Veuillez sélectionner un fichier image.");
+        }
+        if (!label) {
+            return alert("Veuillez donner un nom à cette image.");
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imageLibrary[label] = {
+                src: e.target.result,
+                type: 'file'
+            };
+            localStorage.setItem('lotoImages', JSON.stringify(imageLibrary));
+            refreshImageGallery();
+            
+            // Réinitialiser les champs
+            fileInput.value = '';
+            document.getElementById('imageFileLabel').value = '';
+            
+            alert("Image ajoutée avec succès !");
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+    }
+    
+    function addImageFromUrl() {
+        const url = document.getElementById('imageUrlInput').value.trim();
+        const label = document.getElementById('imageUrlLabel').value.trim();
+        
+        if (!url) {
+            return alert("Veuillez entrer une URL d'image.");
+        }
+        if (!label) {
+            return alert("Veuillez donner un nom à cette image.");
+        }
+        
+        // Vérification simple que c'est bien une URL
+        try {
+            new URL(url);
+        } catch (e) {
+            return alert("L'URL n'est pas valide.");
+        }
+        
+        imageLibrary[label] = {
+            src: url,
+            type: 'url'
+        };
+        localStorage.setItem('lotoImages', JSON.stringify(imageLibrary));
+        refreshImageGallery();
+        
+        // Réinitialiser les champs
+        document.getElementById('imageUrlInput').value = '';
+        document.getElementById('imageUrlLabel').value = '';
+        
+        alert("Image ajoutée avec succès !");
+    }
+    
+    function refreshImageGallery() {
+        const gallery = document.getElementById('imageGallery');
+        gallery.innerHTML = '';
+        
+        if (Object.keys(imageLibrary).length === 0) {
+            gallery.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999; padding: 20px;">Aucune image ajoutée pour le moment</p>';
+            return;
+        }
+        
+        Object.keys(imageLibrary).forEach(label => {
+            const item = document.createElement('div');
+            item.className = 'image-item';
+            
+            const img = document.createElement('img');
+            img.src = imageLibrary[label].src;
+            img.alt = label;
+            img.onerror = function() {
+                this.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22%3EErreur%3C/text%3E%3C/svg%3E';
+            };
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'label';
+            labelDiv.innerText = label;
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-btn';
+            removeBtn.innerHTML = '×';
+            removeBtn.title = 'Supprimer';
+            removeBtn.onclick = function() {
+                removeImage(label);
+            };
+            
+            item.appendChild(img);
+            item.appendChild(labelDiv);
+            item.appendChild(removeBtn);
+            gallery.appendChild(item);
+        });
+    }
+    
+    function removeImage(label) {
+        if (confirm(`Supprimer l'image "${label}" ?`)) {
+            delete imageLibrary[label];
+            localStorage.setItem('lotoImages', JSON.stringify(imageLibrary));
+            refreshImageGallery();
+        }
+    }
+
+    // === BIBLIOTHÈQUE (listes de texte uniquement) ===
+    
     function saveToLibrary() {
         const name = document.getElementById('listName').value.trim();
-        const content = document.getElementById('customList').value.trim();
-        if (!name || !content) return alert("Nom et contenu requis !");
-        library[name] = content;
+        const content = document.getElementById('customList-texte').value.trim();
+        
+        if (!name) {
+            return alert("Veuillez donner un nom à votre liste.");
+        }
+        if (!content) {
+            return alert("Veuillez entrer des éléments de texte.");
+        }
+        
+        library[name] = {
+            content: content,
+            cols: document.getElementById('cols-texte').value,
+            rows: document.getElementById('rows-texte').value,
+            fontSize: document.getElementById('fontSize-texte').value,
+            fontFamily: document.getElementById('fontFamily-texte').value
+        };
+        
         localStorage.setItem('lotoLibrary', JSON.stringify(library));
         refreshLibraryList();
+        alert(`Liste "${name}" enregistrée avec succès !`);
     }
 
     function refreshLibraryList() {
         const select = document.getElementById('librarySelect');
-        select.innerHTML = '<option value="">-- Mes Listes --</option>';
+        select.innerHTML = '<option value="">-- Mes Listes de Mots --</option>';
+        
         Object.keys(library).sort().forEach(name => {
             const opt = document.createElement('option');
-            opt.value = name; opt.innerText = name;
+            opt.value = name;
+            opt.innerText = name;
             select.appendChild(opt);
         });
     }
 
     function loadFromLibrary() {
         const name = document.getElementById('librarySelect').value;
-        if (name) {
-            document.getElementById('customList').value = library[name];
-            document.getElementById('listName').value = name;
+        if (!name) return;
+        
+        const config = library[name];
+        
+        // Gestion ancien et nouveau format
+        if (typeof config === 'string') {
+            // Très ancien format (juste le contenu)
+            document.getElementById('customList-texte').value = config;
+        } else {
+            // Nouveau format (objet avec config)
+            document.getElementById('customList-texte').value = config.content || '';
+            document.getElementById('cols-texte').value = config.cols || 3;
+            document.getElementById('rows-texte').value = config.rows || 3;
+            document.getElementById('fontSize-texte').value = config.fontSize || 20;
+            document.getElementById('fontFamily-texte').value = config.fontFamily || "'Segoe UI', sans-serif";
         }
+        
+        document.getElementById('listName').value = name;
     }
 
     function deleteFromLibrary() {
         const name = document.getElementById('librarySelect').value;
-        if (name && confirm(`Supprimer "${name}" ?`)) {
+        if (!name) {
+            return alert("Veuillez sélectionner une liste à supprimer.");
+        }
+        
+        if (confirm(`Supprimer la liste "${name}" ?`)) {
             delete library[name];
             localStorage.setItem('lotoLibrary', JSON.stringify(library));
             refreshLibraryList();
+            document.getElementById('librarySelect').value = '';
+            alert("Liste supprimée.");
         }
     }
 
-    function exportLibrary() {
-        const dataStr = JSON.stringify(library);
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-        const exportFileDefaultName = 'ma-bibliotheque-loto.json';
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.click();
-    }
-
-    function importLibrary(event) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                library = {...library, ...importedData};
-                localStorage.setItem('lotoLibrary', JSON.stringify(library));
-                refreshLibraryList();
-                alert("Bibliothèque mise à jour avec succès !");
-            } catch (err) {
-                alert("Erreur lors de la lecture du fichier.");
-            }
-        };
-        reader.readAsText(event.target.files[0]);
-    }
-
+    // === GÉNÉRATION ===
+    
     function generate() {
-        const cols = parseInt(document.getElementById('cols').value);
-        const rows = parseInt(document.getElementById('rows').value);
-        const qty = parseInt(document.getElementById('qty').value);
-        const fSize = document.getElementById('fontSize').value;
-        const font = document.getElementById('fontFamily').value; // Récupère la police
-        const totalCells = cols * rows;
-        let sourceArray = document.getElementById('customList').value.split(',').map(s => s.trim()).filter(s => s !== "");
+        if (currentTab === 'texte') {
+            generateTexte();
+        } else if (currentTab === 'images') {
+            generateImages();
+        } else {
+            alert("Veuillez choisir l'onglet 'Loto Texte' ou 'Loto Images' pour générer vos grilles.");
+        }
+    }
 
-        if (sourceArray.length < totalCells) return alert(`Il faut au moins ${totalCells} éléments.`);
+    function generateTexte() {
+        const cols = parseInt(document.getElementById('cols-texte').value);
+        const rows = parseInt(document.getElementById('rows-texte').value);
+        const qty = parseInt(document.getElementById('qty-texte').value);
+        const fSize = document.getElementById('fontSize-texte').value;
+        const font = document.getElementById('fontFamily-texte').value;
+        const totalCells = cols * rows;
+        
+        let sourceArray = document.getElementById('customList-texte').value.split(',').map(s => s.trim()).filter(s => s !== "");
+
+        if (sourceArray.length < totalCells) {
+            return alert(`Il faut au moins ${totalCells} éléments pour une grille de ${cols}×${rows}.`);
+        }
 
         const container = document.getElementById('print-area');
         container.innerHTML = '';
@@ -192,20 +476,22 @@
         for (let g = 1; g <= qty; g++) {
             const shuffled = [...sourceArray].sort(() => 0.5 - Math.random());
             const selection = shuffled.slice(0, totalCells);
+            
             const card = document.createElement('div');
             card.className = 'bingo-card';
             card.innerHTML = `<div class="student-name">Nom : ...........................</div>`;
+            
             const grid = document.createElement('div');
             grid.className = 'grid';
             grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            
             selection.forEach(item => {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
-                
-                // Application de la police et ajustement de taille si cursive
                 cell.style.fontFamily = font;
+                
                 if (font.includes('Dancing Script')) {
-                    cell.style.fontSize = (parseInt(fSize) + 8) + 'px'; // On booste la cursive qui est petite
+                    cell.style.fontSize = (parseInt(fSize) + 8) + 'px';
                 } else {
                     cell.style.fontSize = fSize + 'px';
                 }
@@ -213,6 +499,63 @@
                 cell.innerText = item;
                 grid.appendChild(cell);
             });
+            
+            card.appendChild(grid);
+            container.appendChild(card);
+        }
+    }
+
+    function generateImages() {
+        const cols = parseInt(document.getElementById('cols-images').value);
+        const rows = parseInt(document.getElementById('rows-images').value);
+        const qty = parseInt(document.getElementById('qty-images').value);
+        const showLabels = document.getElementById('showImageLabels').checked;
+        const totalCells = cols * rows;
+        
+        const imageKeys = Object.keys(imageLibrary);
+        
+        if (imageKeys.length < totalCells) {
+            return alert(`Il faut au moins ${totalCells} images pour une grille de ${cols}×${rows}. Vous n'en avez que ${imageKeys.length}.`);
+        }
+
+        const container = document.getElementById('print-area');
+        container.innerHTML = '';
+
+        for (let g = 1; g <= qty; g++) {
+            const shuffled = [...imageKeys].sort(() => 0.5 - Math.random());
+            const selection = shuffled.slice(0, totalCells);
+            
+            const card = document.createElement('div');
+            card.className = 'bingo-card';
+            card.innerHTML = `<div class="student-name">Nom : ...........................</div>`;
+            
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            
+            selection.forEach(label => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                
+                const img = document.createElement('img');
+                img.src = imageLibrary[label].src;
+                img.alt = label;
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    cell.innerHTML += '<div style="color: #e74c3c;">Erreur image</div>';
+                };
+                cell.appendChild(img);
+                
+                if (showLabels) {
+                    const labelDiv = document.createElement('div');
+                    labelDiv.className = 'img-label';
+                    labelDiv.innerText = label;
+                    cell.appendChild(labelDiv);
+                }
+                
+                grid.appendChild(cell);
+            });
+            
             card.appendChild(grid);
             container.appendChild(card);
         }
