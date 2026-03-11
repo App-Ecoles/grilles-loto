@@ -44,8 +44,8 @@
         .grid-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
         .bingo-card { border: 2px solid #333; background: white; padding: 20px; width: 280px; page-break-inside: avoid; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         .student-name { border-bottom: 2px solid #333; margin-bottom: 15px; padding-bottom: 8px; font-style: italic; font-size: 0.85em; font-weight: 500; letter-spacing: 0.3px; }
-        .grid { display: grid; border: 2px solid #333; border-radius: 8px; overflow: hidden; background: #333; gap: 2px; }
-        .cell { background: white; min-height: 70px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px; font-weight: 600; flex-direction: column; transition: background-color 0.2s; }
+        .grid { display: grid; border: 2px solid #333; border-radius: 8px; overflow: hidden; background: white; gap: 0; }
+        .cell { background: white; min-height: 70px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px; font-weight: 600; flex-direction: column; transition: background-color 0.2s; border-right: 1.5px solid #333; border-bottom: 1.5px solid #333; }
         .cell:hover { background: #f8f8f8; }
         .cell img { max-width: 95%; max-height: 60px; object-fit: contain; margin-bottom: 3px; }
         .cell .img-label { font-size: 0.7em; color: #555; font-weight: 500; }
@@ -54,7 +54,8 @@
             .controls { display: none; }
             body { background: white; padding: 0; }
             .grid-container { display: block; }
-            .bingo-card { margin-bottom: 40px; width: 45%; float: left; margin-right: 2%; box-shadow: none; border: 2px solid #333; }
+            .bingo-card { margin-bottom: 40px; width: 45%; float: left; margin-right: 2%; box-shadow: none; border: 2px solid #333; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            .cell { border-right: 1.5px solid #333 !important; border-bottom: 1.5px solid #333 !important; }
             .cell:hover { background: white; }
         }
     </style>
@@ -377,6 +378,7 @@
             const grid = document.createElement('div');
             grid.className = 'grid';
             grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            grid.style.setProperty('--cols', cols);
             selection.forEach(item => {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
@@ -409,6 +411,7 @@
             const grid = document.createElement('div');
             grid.className = 'grid';
             grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            grid.style.setProperty('--cols', cols);
             selection.forEach(label => {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
