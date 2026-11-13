@@ -177,8 +177,9 @@
 
     <div class="actions">
         <button class="btn-gen" onclick="generate()">✨ Générer les grilles</button>
-        <button class="btn-print" onclick="window.print()">🖨️ Imprimer en PDF</button>
+        <button class="btn-print" onclick="printOrSave()">🖨️ Imprimer ou enregistrer en PDF</button>
     </div>
+    <p class="upload-hint" style="text-align:center;">💡 Pour enregistrer sans imprimer : dans la fenêtre qui s'ouvre, choisissez « Enregistrer au format PDF » comme destination (ou « Microsoft Print to PDF » sous Windows).</p>
 </div>
 
 <div id="print-area" class="grid-container"></div>
@@ -349,6 +350,15 @@
             document.getElementById('librarySelect').value = '';
             alert("Liste supprimée.");
         }
+    }
+
+    // === IMPRESSION / ENREGISTREMENT PDF ===
+
+    function printOrSave() {
+        if (!document.getElementById('print-area').children.length) {
+            return alert("Générez d'abord les grilles, puis cliquez sur ce bouton.");
+        }
+        window.print();
     }
 
     // === GÉNÉRATION ===
